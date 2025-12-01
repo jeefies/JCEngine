@@ -28,17 +28,19 @@ int main(void) {
 
     app.ev.registerEvent("refresh", [&image](void *ptr) {
         // jclog << "Image Updating...\n";
+        int tick = SDL_GetTicks() % 2000;
+        image.location.x = tick < 1000 ? tick / 3.0 : (2000 - tick) / 3.0;
         image.update();
         return JC_CONTINUE;
     });
     
-    app.timer.registerEvent(5000, 0, [](void *ptr) {
+    app.timer.createEvent(5000, 0, [](void *ptr) {
         SDL_Event ev;
         ev.type = SDL_EVENT_QUIT;
         SDL_PushEvent(&ev);
         return JC_SUCCESS;
     });
 
-    app.start(5);
+    app.start(50);
     app.mainloop();
 }

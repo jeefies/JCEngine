@@ -12,14 +12,40 @@
 #define DEFAULT_BUFFER_SIZE 4096
 #define DEFAULT_TIMER_TICK 5
 
+extern Uint32 JC_TIMER_EVENT;
+int JCEntryInit();
+
+struct JCEventTimerCallbackData {
+    cmd_type callback;
+    void* userdata;
+    
+    JCEventTimerCallbackData(cmd_type cb, void* ud) 
+        : callback(std::move(cb)), userdata(ud) {}
+};
+template<int buffer_size = DEFAULT_BUFFER_SIZE>
+struct JCEventTimerPacker : JCEventTimer<buffer_size> {
+    int createEvent(int timeout, int interval, cmd_type callback, void *userdata = nullptr) {
+        JCEntryInit();
+        auto data = std::make_shared<JCEventTimerCallbackData>(std::move(callback), userdata);
+    
+        return this->registerEvent(timeout, interval, 
+            [data](void *ptr) {  // shared_ptr 自动管理生命周期
+                jclog << "Pushing My event: " << JC_TIMER_EVENT << "\n";
+                SDL_Event ev;
+                ev.type = JC_TIMER_EVENT;
+                ev.user.data1 = data.get();
+                SDL_PushEvent(&ev);
+                return JC_SUCCESS;
+            });
+    }
+};
+
 struct JCEntry {
     int _running;
-    std::mutex mtx;
-    std::condition_variable cv;
 
     JCTrie<void *> props;
     JCEventCenter ev;
-    JCEventTimer<DEFAULT_BUFFER_SIZE> timer;
+    JCEventTimerPacker<DEFAULT_BUFFER_SIZE> timer;
 
     SDL_Window *window;
     SDL_Renderer *render;
@@ -33,7 +59,6 @@ struct JCEntry {
     void start(int fps);
     void quit();
     void mainloop();
-    void join();
 };
 
 #endif // _JCENGINE_ENTRY_H_

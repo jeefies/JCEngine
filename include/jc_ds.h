@@ -11,6 +11,36 @@ char _trie_name_chr(int x);
 int countBits(int64_t x);
 
 template<typename T>
+struct JCIDAllocator {
+    std::vector<T> val;
+    std::vector<int> unused;
+    int idx = 0;
+
+    T* get(int x) {
+        return &val[x];
+    }
+
+    int create() {
+        if (unused.empty()) {
+            if (val.size() == idx) {
+                val.resize(val.size() * 2);
+                unused.resize(val.size());
+            }
+            return idx++;
+        } 
+        
+        int x = unused.back();
+        unused.pop_back();
+        return x;
+    }
+
+    int del(int x) {
+        unused.push_back(x);
+        return JC_SUCCESS;
+    }
+};
+
+template<typename T>
 struct JCTrieNode {
     int64_t bitmask;
     T x;

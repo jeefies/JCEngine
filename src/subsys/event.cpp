@@ -12,14 +12,14 @@ int JCEventTrieNode::emit(void *userdata) {
     }
     return JC_SUCCESS;
 }
-
+    
 JCEventCenter::JCEventCenter() {
 }
     
 JCEventCenter::~JCEventCenter() {
 } 
 
-int JCEventCenter::registerEvent(const std::string &S, const cmd_type& cmd) {
+int JCEventCenter::registerEvent(const std::string &S, const cmd_type& cmd, int place) {
     checkNameValid(S);
     JCEventTrieNode* node = trie.create(S);
     node->cmds.push_back(cmd);

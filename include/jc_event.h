@@ -37,7 +37,7 @@ struct JCEventCenter {
     JCTrie<JCEventTrieNode> trie;
     JCEventCenter();
     ~JCEventCenter();
-    int registerEvent(const std::string &S, const cmd_type& cmd);
+    int registerEvent(const std::string &S, const cmd_type& cmd, int place = -1);
     int emitEvent(const std::string &S, void *userdata = nullptr);
     inline void checkNameValid(const std::string &S);
 };
@@ -100,7 +100,7 @@ struct JCEventTimer {
     void _stop();
     void _start();
     void _tick();
-    JCEventTimerNode getJCEventTimerNode(int ev_id);
+    JCEventTimerNode* getJCEventTimerNode(int ev_id);
 };
 
 JCEventTrieNode* JCAllocateEventTrieNode();
@@ -257,8 +257,8 @@ int JCEventTimer<buffer_size>::_put_in(int ev_id) {
     assert(status[ev_id] == WAITING);
     #ifdef DEBUG
     jclog << "put in " << ev_id << " with expire " <<
-        std::chrono::duration_cast<std::chrono::milliseconds>(_node_pool[ev_id].expire.time_since_epoch()).count() << " and interval "
-        << _node_pool[ev_id].interval << "ms\n";
+        std::chrono::duration_cast<std::chrono::milliseconds>(_node_pool[ev_id].expire.time_since_epoch()).count()
+        << " and interval " << _node_pool[ev_id].interval << "ms\n";
     #endif
 
     if (_tick_ms == 0) {
